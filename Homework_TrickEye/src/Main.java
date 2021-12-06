@@ -1,12 +1,14 @@
+import java.io.IOException;
 import java.sql.Time;
 import java.util.*;
 
 public class Main {
-    static int total;
-    static int upperBound, lowerBound;
+    //static int total;
+    //static int upperBound, lowerBound;
     static Scanner scanner;
+    static StartScreen startScreen;
 
-    static Ball[] GenerateBallSet(int n){
+    static Ball[] GenerateBallSet(int n, int upperBound, int lowerBound){
         Random random = new Random();
         random.setSeed(System.currentTimeMillis());
         Ball[] ballSet = new Ball[n];
@@ -23,39 +25,53 @@ public class Main {
         return ballSet;
     }
 
-    static void initializeParameters(){
-        scanner = new Scanner(System.in);
-        System.out.println("Input a integer n as the number of the balls. (1 < n <= 50)");
-        System.out.println("If you input 0, load from default.");
-        total = scanner.nextInt();
-        while (total > 50 || total < 1) {
-            if (total == 0) {
-                System.out.println("Load from default");
-                total = 10;
-                upperBound = 300;
-                lowerBound = 100;
-                return;
-            }
-            else {
-                System.out.println("Number too large or incorrect, input again!");
-                total = scanner.nextInt();
-            }
-        }
-        System.out.println("Input 2 integers as the upper and lower bound of the diameters. (10 <= lowerBound < upperBound <= 500)");
-        upperBound = scanner.nextInt();
-        lowerBound = scanner.nextInt();
-        while (upperBound > 500 || upperBound <= lowerBound || lowerBound < 10) {
-            System.out.println("Input incorrect or inappropriate, input again!");
-            upperBound = scanner.nextInt();
-            lowerBound = scanner.nextInt();
-        }
+    static Ball[] GenerateBallSet(Conf conf){
+        int totalBall = conf.getTotalBall();
+        int lowerBound = conf.getLowerBound();
+        int upperBound = conf.getUpperBound();
+        return GenerateBallSet(totalBall, upperBound, lowerBound);
     }
+//
+//    static void initializeParameters(){
+//        scanner = new Scanner(System.in);
+//        System.out.println("Input a integer n as the number of the balls. (1 < n <= 50)");
+//        System.out.println("If you input 0, load from default.");
+//        total = scanner.nextInt();
+//        while (total > 50 || total < 1) {
+//            if (total == 0) {
+//                System.out.println("Load from default");
+//                total = 10;
+//                upperBound = 300;
+//                lowerBound = 100;
+//                return;
+//            }
+//            else {
+//                System.out.println("Number too large or incorrect, input again!");
+//                total = scanner.nextInt();
+//            }
+//        }
+//        System.out.println("Input 2 integers as the upper and lower bound of the diameters. (10 <= lowerBound < upperBound <= 500)");
+//        upperBound = scanner.nextInt();
+//        lowerBound = scanner.nextInt();
+//        while (upperBound > 500 || upperBound <= lowerBound || lowerBound < 10) {
+//            System.out.println("Input incorrect or inappropriate, input again!");
+//            upperBound = scanner.nextInt();
+//            lowerBound = scanner.nextInt();
+//        }
+//    }
 
     public static void main(String[] args){
-        initializeParameters();
-        Ball[] ballSet = GenerateBallSet(total);
-        GUI gui = new GUI(1920, 1080, "Title", ballSet, total);
+        startScreen = new StartScreen();
+        //initializeParameters();
+        //Ball[] ballSet = GenerateBallSet(total);
+        //GUI gui = new GUI(1920, 1080, "Title", ballSet, total);
         //ballSet[0].Collide(ballSet[1]);
+        //gui.init();
+    }
+
+    public static void Launch(Conf conf){
+        Ball[] ballSet = GenerateBallSet(conf);
+        GUI gui = new  GUI(1920, 1080, "No-Collision System Illustrator", ballSet, conf.getTotalBall());
         gui.init();
     }
 }

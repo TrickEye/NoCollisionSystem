@@ -1,15 +1,14 @@
+import java.util.LinkedList;
+
 public class Ball {
     private double positionX, positionY;
     private double velocityX, velocityY;
     private double accelerationX, accelerationY;
     private double diameter;
-    static double MASS_QUOTIENT = 0.0001;
-    static double MASS_CENTER = 10000000000.0;
     static double ROTATE_CENTER_ANGLE = 0;
     static double ROTATE_CENTER_W = 0;
     static double ROTATE_LENGTH = 0;
     static double CENTER_POS_X, CENTER_POS_Y;
-
 
     public Ball (double posX, double posY, double diameter){
         this.setPositionX(posX);
@@ -155,17 +154,18 @@ public class Ball {
         // apply collision
         for (int i = 0; i < n; i++) {
             if (this.CollideJudge(ballSet[i])){
+
 //                System.out.println(this.toString());
 //                System.out.println(ballSet[i].toString());
                 double[] deltaPos = {this.getPositionX() - ballSet[i].getPositionX(), this.getPositionY() - ballSet[i].getPositionY()};
                 double distance = Math.sqrt(deltaPos[0] * deltaPos[0] + deltaPos[1] * deltaPos[1]);
-                double minDistance = this.getDiameter() + ballSet[i].getDiameter();
+                double minDistance = (this.getDiameter() + ballSet[i].getDiameter()) / 2;
 
                 double[] collideAxe = {deltaPos[0] / distance, deltaPos[1] / distance};
-                this.setPositionX(this.getPositionX() + 0.05 * (minDistance - distance) * collideAxe[0]);
-                this.setPositionY(this.getPositionY() + 0.05 * (minDistance - distance) * collideAxe[1]);
-                ballSet[i].setPositionX(ballSet[i].getPositionX() - 0.05 * (minDistance - distance) * collideAxe[0]);
-                ballSet[i].setPositionY(ballSet[i].getPositionY() - 0.05 * (minDistance - distance) * collideAxe[1]);
+                this.setPositionX(this.getPositionX() + 0.5 * (minDistance - distance) * collideAxe[0]);
+                this.setPositionY(this.getPositionY() + 0.5 * (minDistance - distance) * collideAxe[1]);
+                ballSet[i].setPositionX(ballSet[i].getPositionX() - 0.5 * (minDistance - distance) * collideAxe[0]);
+                ballSet[i].setPositionY(ballSet[i].getPositionY() - 0.5 * (minDistance - distance) * collideAxe[1]);
 
 //                System.out.println(this.toString());
 //                System.out.println(ballSet[i].toString());

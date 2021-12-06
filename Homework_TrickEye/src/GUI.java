@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class GUI {
     static int TABLE_WIDTH, TABLE_HEIGHT;
-    static int PHYSICAL_TIMESCALE = 5;
+    static int PHYSICAL_TIMESCALE = 2;
     static int REFRESH_TIMESCALE = 33;
     static double OBSERVE_SCALE = 1.0;
     static int STATE_STOPPED = 1;
@@ -109,8 +109,9 @@ public class GUI {
         ActionListener btn1Listener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("End Program.");
+                //System.out.println("End Program.");
                 System.exit(0);
+                //Main.startScreen.BackToLife();
             }
         };
         ActionListener btn2Listener = new ActionListener() {
