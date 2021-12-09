@@ -21,8 +21,10 @@ public class StringOperations {
         int len = str.length();
         double readValue_integerPart = 0;
         double readValue_decimalPart = 0;
+        double sign = 1;
         int i;
         for (i = 0; i < len && strChr[i] != '.'; i++) {
+            if (strChr[i] == '-') sign = -1;
             if (isNum(strChr[i])) readValue_integerPart = readValue_integerPart * 10 + strChr[i] - '0';
         }
         if (i >= len || strChr[i] != '.') return readValue_integerPart;
@@ -30,7 +32,7 @@ public class StringOperations {
         for (i = i + 1; i < len; i++, mult /= 10){
             if (isNum(strChr[i])) readValue_decimalPart = readValue_decimalPart + mult * (strChr[i] - '0');
         }
-        return readValue_integerPart+readValue_decimalPart;
+        return sign * (readValue_integerPart+readValue_decimalPart);
     }
 
     public static void main(String[] args){

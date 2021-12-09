@@ -10,6 +10,13 @@ public class Conf {
         this.lowerBound = lowerBound;
     }
 
+    public boolean validation(){
+        if (this.totalBall > 50 || this.totalBall < 2) return false;
+        if (this.upperBound < this.lowerBound) return false;
+        if (this.upperBound >= 500) return false;
+        return this.lowerBound >= 10;
+    }
+
     public Conf(String str1, String str2, String str3){
         this.totalBall = StringOperations.toInt(str1);
         int num1 = StringOperations.toInt(str2);

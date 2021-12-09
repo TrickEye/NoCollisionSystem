@@ -3,6 +3,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 public class StartScreen {
 
@@ -13,6 +14,8 @@ public class StartScreen {
     Label[] InputBoxLabel = new Label[Globals.guide.length];
     static TextField[] InputTextField = new TextField[Globals.defaultInput.length];
     Button btnLaunch = new Button();
+    Button btnClose  = new Button();
+    Button btnLaunchFromFile = new Button();
     Dimension ScreenDimension = Toolkit.getDefaultToolkit().getScreenSize();
 
     Panel upperPanel, middlePanel, lowerPanel;
@@ -134,15 +137,48 @@ public class StartScreen {
         ActionListener launchListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Conf Inputconf = new Conf(InputTextField[0].getText(), InputTextField[1].getText(), InputTextField[2].getText());
-//                System.out.println(Inputconf.toString());
-                Main.Launch(Inputconf);
-                Main.startScreen.FakeDestroy();
+                Conf InputConf = new Conf(InputTextField[0].getText(), InputTextField[1].getText(), InputTextField[2].getText());
+//                System.out.println(InputConf.toString());
+                if (InputConf.validation()){
+                    Main.Launch(InputConf);
+                    Main.startScreen.FakeDestroy();
+                }
+                else {
+                    WrongBehaviour Wb = new WrongBehaviour(WrongBehaviour.WRONG_INPUT);
+                }
             }
         };
         this.btnLaunch.addActionListener(launchListener);
-
+        this.btnClose = new Button("End Program");
+        this.btnClose.setBackground(Color.BLACK);
+        this.btnClose.setForeground(Color.WHITE);
+        this.btnClose.setFont(new Font("Monospaced", Font.BOLD, 30));
+        ActionListener closeListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        };
+        this.btnClose.addActionListener(closeListener);
+        this.btnLaunchFromFile = new Button("Load File scene.ncl");
+        this.btnLaunchFromFile.setBackground(Color.BLACK);
+        this.btnLaunchFromFile.setForeground(Color.WHITE);
+        this.btnLaunchFromFile.setFont(new Font("Monospaced", Font.BOLD, 30));
+        ActionListener launchFromFileListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    Main.LaunchFromFile(FileIO.InputInit());
+                    Main.startScreen.FakeDestroy();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        };
+        this.btnLaunchFromFile.addActionListener(launchFromFileListener);
         this.lowerPanel.add(btnLaunch);
+        this.lowerPanel.add(btnClose);
+        this.lowerPanel.add(btnLaunchFromFile);
     }
 
     public void PanelInit(){
@@ -154,7 +190,7 @@ public class StartScreen {
         this.middlePanel.setBackground(Color.BLACK);
 
 
-        this.lowerPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        this.lowerPanel = new Panel(new GridLayout(3, 1, 0, 20));
         this.lowerPanel.setBackground(Color.BLACK);
     }
 

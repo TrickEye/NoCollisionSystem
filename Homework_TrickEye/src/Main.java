@@ -1,5 +1,4 @@
-import java.io.IOException;
-import java.sql.Time;
+import java.awt.*;
 import java.util.*;
 
 public class Main {
@@ -70,8 +69,19 @@ public class Main {
     }
 
     public static void Launch(Conf conf){
+        Dimension ScreenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+        ScreenDimension.setSize(ScreenDimension.getWidth() - 210, ScreenDimension.getHeight() - 200);
         Ball[] ballSet = GenerateBallSet(conf);
-        GUI gui = new  GUI(1920, 1080, "No-Collision System Illustrator", ballSet, conf.getTotalBall());
+        MainScreen gui = new MainScreen((int)ScreenDimension.getWidth(), (int)ScreenDimension.getHeight(), "No-Collision System Illustrator", ballSet, conf.getTotalBall());
         gui.init();
+    }
+
+    public static void LaunchFromFile(Ball[] ballSet){
+        if (ballSet != null){
+            Dimension ScreenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+            ScreenDimension.setSize(ScreenDimension.getWidth() - 210, ScreenDimension.getHeight() - 200);
+            MainScreen gui = new MainScreen((int) ScreenDimension.getWidth(), (int) ScreenDimension.getHeight(), "No-Collision System Illustrator", ballSet, ballSet.length);
+            gui.init();
+        }
     }
 }
