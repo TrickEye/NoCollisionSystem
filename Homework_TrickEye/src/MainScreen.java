@@ -14,60 +14,37 @@ public class MainScreen {
     static boolean SHOW_TAIL = false;
     static Frame frame;
     static TextArea textField;
+    static Panel panel;
+    static MenuBar menuBar;
     static int totalBall;
     static Ball[] ballSet;
     static MyCanvas myCanvas;
     static Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9;
-    static Timer HoldTimer;
+    static Timer ConsoleTimer;
+    static int Hold = 0;
 
-    public MainScreen(int width, int height, String Title, Ball[] bSet, int n){
+    public MainScreen(int width, int height, Ball[] bSet, int n){
         TABLE_WIDTH = width;
         TABLE_HEIGHT = height;
+        OBSERVE_SCALE = 1.0;
+        SHOW_TAIL = false;
+        Hold = 0;
+
         ballSet = bSet;
         totalBall = n;
-        frame = new Frame(Title);
-        frame.setUndecorated(true);
-        frame.setBackground(Color.BLACK);
 
-        myCanvas = new MyCanvas();
-        myCanvas.setBalls(bSet, totalBall);
-
-        HoldTimer = new Timer(200, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                MainScreen.Hold = Math.max(MainScreen.Hold - 1 , 0);
-                if (MainScreen.Hold == 0) {
-                    double completionPercentage = 100 * Ball.getSafetyPercent(MainScreen.ballSet);
-                    textField.setText("Estimated percentage of completion : " + String.format("%.2f%%", completionPercentage));
-                    char[] completion = new char[100];
-                    for (int i = 0; i < 100; i++) {
-                        if (i + 1 <= completionPercentage + 0.0001) {
-                            completion[i] ='>';
-                        }
-                        else {
-                            completion[i] = '-';
-                        }
-                    }
-                    textField.append("\n" + new String(completion, 0, 100));
-                    if (completionPercentage >= 100 - 0.0001) textField.append(" Complete!");
-                    textField.setEditable(false);
-                }
-            }
-        });
-        HoldTimer.start();
     }
 
-    static int Hold = 0;
     public static void setTextField(String text, String op){
         if (op.equals("APPEND")){
             textField.append("\n" + text);
             textField.setEditable(false);
-            MainScreen.Hold = 2;
+            MainScreen.Hold = 5;
         }
         if (op.equals("SET")){
             textField.setText(text);
             textField.setEditable(false);
-            MainScreen.Hold = 10;
+            MainScreen.Hold = 15;
         }
     }
 
@@ -132,21 +109,10 @@ public class MainScreen {
         }
     }
 
-    void init(){
-        frame.addWindowListener(new WindowAdapter() {
-            /**
-             * Invoked when a window is in the process of being closed.
-             * The close operation can be overridden at this point.
-             *
-             * @param e
-             */
-            @Override
-            public void windowClosing(WindowEvent e) {
-                super.windowClosing(e);
-                frame.setVisible(false);
-                Main.startScreen.BackToLife();
-            }
-        });
+    void canvasSetup(){
+        myCanvas = new MyCanvas();
+        myCanvas.setPreferredSize(new Dimension(TABLE_WIDTH, TABLE_HEIGHT));
+        myCanvas.setBalls(ballSet, totalBall);
         KeyListener k1 = new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -161,9 +127,32 @@ public class MainScreen {
                 }
             }
         };
-        frame.addKeyListener(k1);
+//        frame.addKeyListener(k1);
         myCanvas.addKeyListener(k1);
+    }
 
+    void frameSetup(){
+        frame = new Frame(Globals.Title);
+        frame.setUndecorated(true);
+        frame.setBackground(Color.BLACK);
+        frame.addWindowListener(new WindowAdapter() {
+            /**
+             * Invoked when a window is in the process of being closed.
+             * The close operation can be overridden at this point.
+             *
+             * @param e
+             */
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                frame.setVisible(false);
+                Main.startScreen.BackToLife();
+            }
+        });
+
+    }
+
+    void timerSetup(){
         ActionListener ballListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -189,7 +178,32 @@ public class MainScreen {
         physical_timer.start();
         Timer refresh_timer = new Timer(REFRESH_TIMESCALE, refreshListener);
         refresh_timer.start();
+        ConsoleTimer = new Timer(200, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MainScreen.Hold = Math.max(MainScreen.Hold - 1 , 0);
+                if (MainScreen.Hold == 0) {
+                    double completionPercentage = 100 * Ball.getSafetyPercent(MainScreen.ballSet);
+                    textField.setText("Estimated percentage of completion : " + String.format("%.2f%%", completionPercentage));
+                    char[] completion = new char[100];
+                    for (int i = 0; i < 100; i++) {
+                        if (i + 1 <= completionPercentage + 0.0001) {
+                            completion[i] ='>';
+                        }
+                        else {
+                            completion[i] = '-';
+                        }
+                    }
+                    textField.append("\n" + new String(completion, 0, 100));
+                    if (completionPercentage >= 100 - 0.0001) textField.append(" Complete!");
+                    textField.setEditable(false);
+                }
+            }
+        });
+        ConsoleTimer.start();
+    }
 
+    void buttonSetup(){
         ActionListener btn1Listener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -302,8 +316,19 @@ public class MainScreen {
         btn6.addActionListener(btn6Listener);
         btn7.addActionListener(btn7Listener);
         btn8.addActionListener(btn8Listener);
+    }
 
-        Panel panel = new Panel(new FlowLayout(FlowLayout.CENTER, 10,10));
+    void textFieldSetup(){
+        textField = new TextArea("Console", 2, 4, Scrollbar.VERTICAL);
+//        textField.setPreferredSize(new Dimension(1920, 200));
+        textField.setVisible(true);
+        textField.setBackground(Color.BLACK);
+        textField.setForeground(Color.WHITE);
+        textField.setFont(new Font("Monospaced", Font.PLAIN, 20));
+    }
+
+    void panelSetup(){
+        panel = new Panel(new FlowLayout(FlowLayout.CENTER, 10,10));
         panel.setPreferredSize(new Dimension(210, TABLE_HEIGHT));
         panel.add(btn1);
         panel.add(btn2);
@@ -313,19 +338,47 @@ public class MainScreen {
         panel.add(btn6);
         panel.add(btn7);
         panel.add(btn8);
+    }
+
+    void menuSetup(){
+        menuBar = new MenuBar();
+        menuBar.setFont(new Font("Monospaced", Font.BOLD, 15));
+        for (int i = 0; i < Globals.MenuLabel[0].length; i++) {
+            Menu menu = new Menu(Globals.MenuLabel[0][i]);
+
+            for (int j = 0; j < Globals.MenuLabel[1 + i].length; j++){
+                MenuItem menuItem = new MenuItem(Globals.MenuLabel[1+i][j]);
+                menuItem.addActionListener(Globals.MenuActionListener[i][j]);
+                menu.add(menuItem);
+            }
+
+            menuBar.add(menu);
+        }
+//        Menu haha = new Menu("");
+//        haha.add(new MenuItem());
+//        menuBar.add(haha);
+
+    }
+
+    void init(){
+        frameSetup();
+
+        canvasSetup();
+
+        timerSetup();
+
+        buttonSetup();
+
+        panelSetup();
+
+        textFieldSetup();
+
+        menuSetup();
 
         frame.setLayout(new BorderLayout());
-        myCanvas.setPreferredSize(new Dimension(TABLE_WIDTH, TABLE_HEIGHT));
+        frame.setMenuBar(menuBar);
         frame.add(panel, BorderLayout.EAST);
         frame.add(myCanvas, BorderLayout.CENTER);
-
-
-        textField = new TextArea("Console", 2, 4, Scrollbar.VERTICAL);
-//        textField.setPreferredSize(new Dimension(1920, 200));
-        textField.setVisible(true);
-        textField.setBackground(Color.BLACK);
-        textField.setForeground(Color.WHITE);
-        textField.setFont(new Font("Monospaced", Font.PLAIN, 20));
         frame.add(textField, BorderLayout.SOUTH);
 
         frame.pack();
@@ -333,8 +386,6 @@ public class MainScreen {
         frame.setAlwaysOnTop(true);
 
 //        Scanner scanner = new Scanner();
-//        MenuBar menuBar = new MenuBar();
-//        menuBar.add(new Menu("Haha"));
-//        frame.setMenuBar(menuBar);
+
     }
 }

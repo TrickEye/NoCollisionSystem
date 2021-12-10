@@ -1,6 +1,24 @@
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
 
+/**
+ * This file records global values that are needed
+ * and used in other files.
+ * Some labels, for example, may fetch from the
+ * notices in this file to display the information.
+ * @see StartScreen
+ * @see Ball
+ * @see MainScreen
+ * @see WrongBehaviour
+ */
 public class Globals {
+    /**
+     * Below are notices used in the Start Screen.
+     * The notice will be used in StartScreen.java
+     * @see StartScreen
+     */
     static String Title = "No-Collision System Illustrator";
     static String[] description = {
             "Author: TrickEye",
@@ -19,6 +37,11 @@ public class Globals {
             "300",
             "100"
     };
+
+    /**
+     * Below are values to be used in Ball class.
+     * @see Ball
+     */
 
     static int HistoryMemorySize = 100;
     static int NotCollidedMemorySize = 40000;
@@ -50,6 +73,162 @@ public class Globals {
     static int SpeedFactor = 1;
     static int SlowDownFactor = 1;
     static int ignoreZoom = 0;
+
+    static String[][] MenuLabel = {
+            {
+                "No-Collision System Illustrator",
+                "File",
+                "Control"
+            },
+            {
+                "Software Information",
+                "Author Information",
+                "Back to start screen",
+                "Close the software"
+            },
+            {
+                "Save current scene",
+                "Load from scene.ncl"
+            },
+            {
+                "Pause / Resume",
+                "Zoom in",
+                "Zoom out",
+                "Speed up",
+                "Speed down",
+                "Show / Hide tail"
+            },
+    };
+    static ActionListener[][] MenuActionListener = {
+            {
+                    // Software Information
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+
+                    }
+                },
+                    // Author Information
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+
+                    }
+                },
+                    // Back To Start Screen
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        MainScreen.frame.setVisible(false);
+                        Main.startScreen.BackToLife();
+                    }
+                },
+                    // Close the software
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        System.exit(0);
+                    }
+                }
+            },
+            {
+                    // Save current scene
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            FileIO.SaveCurrentScene(MainScreen.ballSet);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                },
+                    // Load from scene.ncl
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            if (Main.LaunchFromFile(FileIO.InputInit()))
+                                MainScreen.setTextField("Welcome Back!", "SET");
+                        } catch (IOException ex) {
+                            WrongBehaviour wb = new WrongBehaviour(WrongBehaviour.WRONG_FILE);
+                            //ex.printStackTrace();
+                        }
+                    }
+                }
+            },
+            {
+                    // Pause / Resume
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        MainScreen.setTextField((MainScreen.CURRENT_STATE == MainScreen.STATE_NORMAL) ? "Stop." : "Resume.", "SET");
+                        if (MainScreen.CURRENT_STATE == MainScreen.STATE_NORMAL) MainScreen.btn2.setLabel("Resume");
+                        if (MainScreen.CURRENT_STATE == MainScreen.STATE_STOPPED) MainScreen.btn2.setLabel("Stop");
+                        MainScreen.CURRENT_STATE = 1 - MainScreen.CURRENT_STATE;
+                    }
+                },
+                    //"Zoom in",
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        MainScreen.OBSERVE_SCALE /= 1.1;
+                        Globals.ignoreZoom = 100;
+                    }
+                },
+                //"Zoom out",
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        MainScreen.OBSERVE_SCALE *= 1.1;
+                    }
+                },
+                    //"Speed up",
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (Globals.SlowDownFactor == 1) {
+                            Globals.SpeedFactor = Math.min(Globals.SpeedFactor + 1, 100);
+                            MainScreen.setTextField("SpeedFactor : " + Globals.SpeedFactor, "SET");
+                            if (Globals.SpeedFactor >= 10 && MainScreen.SHOW_TAIL) {
+                                MainScreen.setTextField("We don't advice showing tail at this speed, tail hided.", "APPEND");
+                                MainScreen.SHOW_TAIL = false;
+                                MainScreen.btn7.setLabel("Show Tail");
+                            }
+                        }
+                        else {
+                            Globals.SlowDownFactor--;
+                            if (Globals.SlowDownFactor >= 2) MainScreen.setTextField("SpeedFactor : 1 / " + Globals.SlowDownFactor, "SET");
+                            else MainScreen.setTextField("SpeedFactor : 1", "SET");
+                        }
+                    }
+                },
+                    //"Speed down",
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (Globals.SpeedFactor > 1) {
+                            Globals.SpeedFactor = Math.max(Globals.SpeedFactor - 1, 1);
+                            MainScreen.setTextField("SpeedFactor : " + Globals.SpeedFactor, "SET");
+                        }
+                        else {
+                            Globals.SlowDownFactor = Math.min(10, Globals.SlowDownFactor + 1);
+                            MainScreen.setTextField("SpeedFactor : 1 / " + Globals.SlowDownFactor, "SET");
+                        }
+                    }
+                },
+                    //"Show / Hide tail"
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        MainScreen.SHOW_TAIL = !MainScreen.SHOW_TAIL;
+                        if (MainScreen.SHOW_TAIL) MainScreen.btn7.setLabel("Hide Tail");
+                        else MainScreen.btn7.setLabel("Show Tail");
+                    }
+                }
+            }
+    };
+
     /**
      * Below are notices that are used in WrongBehaviour.java
      * These string array provides information to be displayed at the warning window.

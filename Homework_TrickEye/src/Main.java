@@ -72,15 +72,18 @@ public class Main {
         Dimension ScreenDimension = Toolkit.getDefaultToolkit().getScreenSize();
         ScreenDimension.setSize(ScreenDimension.getWidth() - 210, ScreenDimension.getHeight() - 100);
         Ball[] ballSet = GenerateBallSet(conf);
-        MainScreen gui = new MainScreen((int)ScreenDimension.getWidth(), (int)ScreenDimension.getHeight(), "No-Collision System Illustrator", ballSet, conf.getTotalBall());
+        MainScreen gui = new MainScreen((int)ScreenDimension.getWidth(), (int)ScreenDimension.getHeight(), ballSet, conf.getTotalBall());
         gui.init();
     }
 
     public static boolean LaunchFromFile(Ball[] ballSet){
         if (ballSet != null){
+            if (MainScreen.frame != null) {
+                MainScreen.frame.setVisible(false);
+            }
             Dimension ScreenDimension = Toolkit.getDefaultToolkit().getScreenSize();
             ScreenDimension.setSize(ScreenDimension.getWidth() - 210, ScreenDimension.getHeight() - 100);
-            MainScreen gui = new MainScreen((int) ScreenDimension.getWidth(), (int) ScreenDimension.getHeight(), "No-Collision System Illustrator", ballSet, ballSet.length);
+            MainScreen gui = new MainScreen((int) ScreenDimension.getWidth(), (int) ScreenDimension.getHeight(), ballSet, ballSet.length);
             gui.init();
             return true;
         }
