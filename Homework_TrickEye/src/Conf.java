@@ -13,7 +13,7 @@ public class Conf {
     public boolean validation(){
         if (this.totalBall > 50 || this.totalBall < 2) return false;
         if (this.upperBound < this.lowerBound) return false;
-        if (this.upperBound >= 500) return false;
+        if (this.upperBound > 500) return false;
         return this.lowerBound >= 10;
     }
 

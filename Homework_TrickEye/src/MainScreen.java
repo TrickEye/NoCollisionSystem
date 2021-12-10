@@ -11,13 +11,14 @@ public class MainScreen {
     static int STATE_STOPPED = 1;
     static int STATE_NORMAL= 0;
     static int CURRENT_STATE = STATE_NORMAL;
-    static boolean SHOW_TAIL = true;
+    static boolean SHOW_TAIL = false;
     static Frame frame;
     static TextArea textField;
     static int totalBall;
     static Ball[] ballSet;
     static MyCanvas myCanvas;
     static Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9;
+    static Timer HoldTimer;
 
     public MainScreen(int width, int height, String Title, Ball[] bSet, int n){
         TABLE_WIDTH = width;
@@ -25,21 +26,48 @@ public class MainScreen {
         ballSet = bSet;
         totalBall = n;
         frame = new Frame(Title);
+        frame.setUndecorated(true);
         frame.setBackground(Color.BLACK);
 
         myCanvas = new MyCanvas();
         myCanvas.setBalls(bSet, totalBall);
 
+        HoldTimer = new Timer(200, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MainScreen.Hold = Math.max(MainScreen.Hold - 1 , 0);
+                if (MainScreen.Hold == 0) {
+                    double completionPercentage = 100 * Ball.getSafetyPercent(MainScreen.ballSet);
+                    textField.setText("Estimated percentage of completion : " + String.format("%.2f%%", completionPercentage));
+                    char[] completion = new char[100];
+                    for (int i = 0; i < 100; i++) {
+                        if (i + 1 <= completionPercentage + 0.0001) {
+                            completion[i] ='>';
+                        }
+                        else {
+                            completion[i] = '-';
+                        }
+                    }
+                    textField.append("\n" + new String(completion, 0, 100));
+                    if (completionPercentage >= 100 - 0.0001) textField.append(" Complete!");
+                    textField.setEditable(false);
+                }
+            }
+        });
+        HoldTimer.start();
     }
 
+    static int Hold = 0;
     public static void setTextField(String text, String op){
         if (op.equals("APPEND")){
             textField.append("\n" + text);
             textField.setEditable(false);
+            MainScreen.Hold = 2;
         }
         if (op.equals("SET")){
             textField.setText(text);
             textField.setEditable(false);
+            MainScreen.Hold = 10;
         }
     }
 
@@ -97,8 +125,8 @@ public class MainScreen {
                 if (Math.abs(posX) > (int)(0.4 * width)) zoomOut = true;
                 if (Math.abs(posY) > (int)(0.4 * height)) zoomOut = true;
             }
-            if (zoomOut) {
-                MainScreen.setTextField("Adaptively zoom out; Observe Scale Now At: " + String.format("%.2f", OBSERVE_SCALE), "APPEND");
+            if (zoomOut && Globals.ignoreZoom == 0) {
+                MainScreen.setTextField("Adaptively zoom out; Observe Scale Now At: " + String.format("%.2f", OBSERVE_SCALE), "SET");
                 OBSERVE_SCALE *= 1.1;
             }
         }
@@ -129,6 +157,7 @@ public class MainScreen {
                 }
                 if (keyCode == KeyEvent.VK_DOWN) {
                     OBSERVE_SCALE /= 1.1;
+                    Globals.ignoreZoom = 100;
                 }
             }
         };
@@ -152,6 +181,7 @@ public class MainScreen {
         ActionListener refreshListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                Globals.ignoreZoom = Math.max(Globals.ignoreZoom - 1, 0);
                 myCanvas.repaint();
             }
         };
@@ -187,25 +217,39 @@ public class MainScreen {
             @Override
             public void actionPerformed(ActionEvent e) {
                 OBSERVE_SCALE /= 1.1;
+                Globals.ignoreZoom = 100;
             }
         };
         ActionListener btn5Listener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Globals.SpeedFactor = Math.min(Globals.SpeedFactor + 1, 100);
-                MainScreen.setTextField("SpeedFactor : " + Globals.SpeedFactor, "SET");
-                if (Globals.SpeedFactor >= 10 && SHOW_TAIL) {
-                    MainScreen.setTextField("We don't advice showing tail at this speed, tail hided.", "APPEND");
-                    SHOW_TAIL = false;
-                    MainScreen.btn7.setLabel("Show Tail");
+                if (Globals.SlowDownFactor == 1) {
+                    Globals.SpeedFactor = Math.min(Globals.SpeedFactor + 1, 100);
+                    MainScreen.setTextField("SpeedFactor : " + Globals.SpeedFactor, "SET");
+                    if (Globals.SpeedFactor >= 10 && SHOW_TAIL) {
+                        MainScreen.setTextField("We don't advice showing tail at this speed, tail hided.", "APPEND");
+                        SHOW_TAIL = false;
+                        MainScreen.btn7.setLabel("Show Tail");
+                    }
+                }
+                else {
+                    Globals.SlowDownFactor--;
+                    if (Globals.SlowDownFactor >= 2) MainScreen.setTextField("SpeedFactor : 1 / " + Globals.SlowDownFactor, "SET");
+                    else MainScreen.setTextField("SpeedFactor : 1", "SET");
                 }
             }
         };
         ActionListener btn6Listener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Globals.SpeedFactor = Math.max(Globals.SpeedFactor - 1, 1);
-                MainScreen.setTextField("SpeedFactor : " + Globals.SpeedFactor, "SET");
+                if (Globals.SpeedFactor > 1) {
+                    Globals.SpeedFactor = Math.max(Globals.SpeedFactor - 1, 1);
+                    MainScreen.setTextField("SpeedFactor : " + Globals.SpeedFactor, "SET");
+                }
+                else {
+                    Globals.SlowDownFactor = Math.min(10, Globals.SlowDownFactor + 1);
+                    MainScreen.setTextField("SpeedFactor : 1 / " + Globals.SlowDownFactor, "SET");
+                }
             }
         };
         ActionListener btn7Listener = new ActionListener() {
@@ -232,7 +276,7 @@ public class MainScreen {
         btn4 = new Button("Zoom in");
         btn5 = new Button("Speed Up");
         btn6 = new Button("Speed Down");
-        btn7 = new Button("Hide Tail");
+        btn7 = new Button("Show Tail");
         btn8 = new Button("Save Scene");
         btn1.setPreferredSize(new Dimension(200, 100));
         btn1.setFont(new Font("Monospaced", Font.PLAIN,40));
@@ -281,7 +325,7 @@ public class MainScreen {
         textField.setVisible(true);
         textField.setBackground(Color.BLACK);
         textField.setForeground(Color.WHITE);
-        textField.setFont(new Font("Monospaced", Font.PLAIN, 30));
+        textField.setFont(new Font("Monospaced", Font.PLAIN, 20));
         frame.add(textField, BorderLayout.SOUTH);
 
         frame.pack();

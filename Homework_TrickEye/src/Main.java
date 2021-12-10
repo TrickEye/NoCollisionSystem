@@ -13,8 +13,8 @@ public class Main {
         Ball[] ballSet = new Ball[n];
         for (int i = 0; i < n; i++) {
             do{
-                ballSet[i] = new Ball(random.nextDouble() * (960) * 2 - 960,
-                                      random.nextDouble() * (540) * 2 - 540,
+                ballSet[i] = new Ball(random.nextDouble() * (upperBound * n) / 4 - upperBound * n / 8.0,
+                                      random.nextDouble() * (upperBound * n) / 4 - upperBound * n / 8.0,
                                    random.nextDouble() * (upperBound - lowerBound) + lowerBound);
             }while(ballSet[i].CollideJudge(ballSet, i));
             ballSet[i].setVelocityX(random.nextDouble() * 80 - 40);
@@ -70,18 +70,20 @@ public class Main {
 
     public static void Launch(Conf conf){
         Dimension ScreenDimension = Toolkit.getDefaultToolkit().getScreenSize();
-        ScreenDimension.setSize(ScreenDimension.getWidth() - 210, ScreenDimension.getHeight() - 200);
+        ScreenDimension.setSize(ScreenDimension.getWidth() - 210, ScreenDimension.getHeight() - 100);
         Ball[] ballSet = GenerateBallSet(conf);
         MainScreen gui = new MainScreen((int)ScreenDimension.getWidth(), (int)ScreenDimension.getHeight(), "No-Collision System Illustrator", ballSet, conf.getTotalBall());
         gui.init();
     }
 
-    public static void LaunchFromFile(Ball[] ballSet){
+    public static boolean LaunchFromFile(Ball[] ballSet){
         if (ballSet != null){
             Dimension ScreenDimension = Toolkit.getDefaultToolkit().getScreenSize();
-            ScreenDimension.setSize(ScreenDimension.getWidth() - 210, ScreenDimension.getHeight() - 200);
+            ScreenDimension.setSize(ScreenDimension.getWidth() - 210, ScreenDimension.getHeight() - 100);
             MainScreen gui = new MainScreen((int) ScreenDimension.getWidth(), (int) ScreenDimension.getHeight(), "No-Collision System Illustrator", ballSet, ballSet.length);
             gui.init();
+            return true;
         }
+        else return false;
     }
 }

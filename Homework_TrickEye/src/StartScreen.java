@@ -43,6 +43,10 @@ public class StartScreen {
         });
 //        this.frame.setSize(new Dimension(TABLE_WIDTH, TABLE_HEIGHT));
         this.frame.setSize(ScreenDimension);
+        if (ScreenDimension.width < 1500 || ScreenDimension.height < 900) {
+            WrongBehaviour wb = new WrongBehaviour(WrongBehaviour.SCREEN_TOO_SMALL);
+        }
+        System.out.println(ScreenDimension.width + "*" + ScreenDimension.height);
     }
 
 //    public void tfInit(){
@@ -79,7 +83,7 @@ public class StartScreen {
      */
     public void UpperPanelInit(){
         this.TitleLabel = new Label();
-        this.TitleLabel.setSize(new Dimension(300, 100));
+        this.TitleLabel.setSize(new Dimension(300, 60));
         this.TitleLabel.setBackground(Color.BLACK);
         this.TitleLabel.setForeground(Color.WHITE);
         this.TitleLabel.setFont(new Font("Serif", Font.PLAIN, 50));
@@ -90,10 +94,10 @@ public class StartScreen {
 
         for (int i = 0; i < Globals.description.length; i++) {
             this.DescriptionLabel[i] = new Label();
-            this.DescriptionLabel[i].setSize(new Dimension(500, 40));
+            this.DescriptionLabel[i].setPreferredSize(new Dimension(1400, 30));
             this.DescriptionLabel[i].setBackground(Color.BLACK);
             this.DescriptionLabel[i].setForeground(Color.WHITE);
-            this.DescriptionLabel[i].setFont(new Font("Monospaced", Font.PLAIN, 20));
+            this.DescriptionLabel[i].setFont(new Font("Monospaced", Font.PLAIN, 30));
             this.DescriptionLabel[i].setAlignment(Label.LEFT);
             this.DescriptionLabel[i].setText(Globals.description[i]);
             this.DescriptionLabel[i].setEnabled(true);
@@ -168,10 +172,11 @@ public class StartScreen {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    Main.LaunchFromFile(FileIO.InputInit());
-                    Main.startScreen.FakeDestroy();
+                    if (Main.LaunchFromFile(FileIO.InputInit()))
+                        Main.startScreen.FakeDestroy();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    WrongBehaviour wb = new WrongBehaviour(WrongBehaviour.WRONG_FILE);
+                    //ex.printStackTrace();
                 }
             }
         };
@@ -190,7 +195,7 @@ public class StartScreen {
         this.middlePanel.setBackground(Color.BLACK);
 
 
-        this.lowerPanel = new Panel(new GridLayout(3, 1, 0, 20));
+        this.lowerPanel = new Panel(new GridLayout(1, 3, 20, 20));
         this.lowerPanel.setBackground(Color.BLACK);
     }
 

@@ -48,4 +48,36 @@ public class Globals {
     static int colorArrayLen = 17;
 
     static int SpeedFactor = 1;
+    static int SlowDownFactor = 1;
+    static int ignoreZoom = 0;
+    /**
+     * Below are notices that are used in WrongBehaviour.java
+     * These string array provides information to be displayed at the warning window.
+     * @see WrongBehaviour
+     */
+    static Color ErrorWBColor = new Color(255, 127, 0);
+    static Color ErrorWNColor = new Color(192, 192, 127);
+    static String [] NoticeWrongInput = {
+            "Wrong Input!",
+            "Error: Wrong input, please check your input",
+            "Your input should meet these requirements: ",
+            "0 < n <= 50, ",
+            "10 < lowerBound < upperBound <= 500"
+    };
+    static String [] NoticeWrongFile = {
+            "Wrong File!",
+            "Error: Wrong file, please check scene.ncl",
+            "Or, the file could have been moderated ",
+            "  outside this software."
+    };
+    static String [] NoticeSmallScreen = {
+            "Screen too Small!",
+            "Warning: Screen too small, please check.",
+            "This program runs only on screens that are",
+            "larger than 1600 * 900",
+            "If this warning still appear on your screen, ",
+            "please check if you have enabled 125% zooming",
+            "You can close this window and still run this",
+            "software, but some features may be influenced."
+    };
 }

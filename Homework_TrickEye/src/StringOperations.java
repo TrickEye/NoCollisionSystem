@@ -8,11 +8,13 @@ public class StringOperations {
         char[] strChr = str.toCharArray();
         int len = str.length();
         int readValue = 0;
+        int sign = 1;
         for (int i = 0; i < len; i++){
-            if (isNum(strChr[i])) readValue = readValue * 10 + strChr[i] - '0';
-            else return readValue;
+            if (strChr[i] == '-') sign = -1;
+            else if (isNum(strChr[i])) readValue = readValue * 10 + strChr[i] - '0';
+            else return sign * readValue;
         }
-        return readValue;
+        return sign * readValue;
     }
 
     public static double toDouble(String str){

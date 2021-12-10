@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.util.Arrays;
 
 public class Ball {
     private double positionX, positionY;
@@ -8,6 +9,8 @@ public class Ball {
     private final double[][] History = new double[Globals.HistoryMemorySize][2];
     private int HistoryNowAt = 0;
     private int NotCollidedCycles;
+    private int[] NotCollidedArray = new int[Globals.HistoryMemorySize];
+    private int NotCollidedSum = 0;
     static double CENTER_POS_X, CENTER_POS_Y;
 
     public Ball (double posX, double posY, double diameter){
@@ -24,6 +27,7 @@ public class Ball {
         }
         this.HistoryNowAt = 0;
         this.NotCollidedCycles = 0;
+        this.NotCollidedSum = 0;
     }
 
     public Ball() {
@@ -98,6 +102,22 @@ public class Ball {
         return HistoryNowAt;
     }
 
+    public double getSafetyPercent(){
+        return Math.min(
+                (double)this.NotCollidedSum / ((double)Globals.NotCollidedMemorySize * Globals.HistoryMemorySize) ,
+                1.00
+        );
+    }
+
+    public static double getSafetyPercent(Ball[] ballSet){
+        int len = ballSet.length;
+        double totSafety = 0;
+        for (Ball ball : ballSet) {
+            totSafety += ball.getSafetyPercent();
+        }
+        return totSafety / len;
+    }
+
     @Override
     public String toString() {
         return  "ball:Diam = "+this.diameter+'\n'+
@@ -137,14 +157,25 @@ public class Ball {
     }
 
     int cycle = 0;
+    int cycleCounter = 0;
     public void refresh(Ball[] ballSet, int n) {
+        cycleCounter++;
+        if (cycleCounter < Globals.SlowDownFactor) return;
+        else cycleCounter = 0;
+
         // record history
 
         if (this.cycle % 5 == 0) {
             this.History[this.HistoryNowAt][0] = this.positionX;
             this.History[this.HistoryNowAt][1] = this.positionY;
+
+            this.NotCollidedSum -= this.NotCollidedArray[HistoryNowAt];
+            this.NotCollidedArray[HistoryNowAt] = this.NotCollidedCycles;
+            this.NotCollidedSum += this.NotCollidedArray[HistoryNowAt];
+
             HistoryNowAt++;
             if (HistoryNowAt >= Globals.HistoryMemorySize) HistoryNowAt -= Globals.HistoryMemorySize;
+
         }
         this.cycle++; if (cycle > 5) cycle-=5;
 
