@@ -44,7 +44,7 @@ public class StartScreen {
 //        this.frame.setSize(new Dimension(TABLE_WIDTH, TABLE_HEIGHT));
         this.frame.setSize(ScreenDimension);
         if (ScreenDimension.width < 1500 || ScreenDimension.height < 900) {
-            WrongBehaviour wb = new WrongBehaviour(WrongBehaviour.SCREEN_TOO_SMALL);
+            Notice wb = new Notice(Notice.SCREEN_TOO_SMALL);
         }
         System.out.println(ScreenDimension.width + "*" + ScreenDimension.height);
     }
@@ -94,7 +94,7 @@ public class StartScreen {
 
         for (int i = 0; i < Globals.description.length; i++) {
             this.DescriptionLabel[i] = new Label();
-            this.DescriptionLabel[i].setPreferredSize(new Dimension(1400, 30));
+            this.DescriptionLabel[i].setPreferredSize(new Dimension(1500, 30));
             this.DescriptionLabel[i].setBackground(Color.BLACK);
             this.DescriptionLabel[i].setForeground(Color.WHITE);
             this.DescriptionLabel[i].setFont(new Font("Monospaced", Font.PLAIN, 30));
@@ -148,7 +148,7 @@ public class StartScreen {
                     Main.startScreen.FakeDestroy();
                 }
                 else {
-                    WrongBehaviour Wb = new WrongBehaviour(WrongBehaviour.WRONG_INPUT);
+                    Notice Wb = new Notice(Notice.WRONG_INPUT);
                 }
             }
         };
@@ -175,7 +175,7 @@ public class StartScreen {
                     if (Main.LaunchFromFile(FileIO.InputInit()))
                         Main.startScreen.FakeDestroy();
                 } catch (IOException ex) {
-                    WrongBehaviour wb = new WrongBehaviour(WrongBehaviour.WRONG_FILE);
+                    Notice wb = new Notice(Notice.WRONG_FILE);
                     //ex.printStackTrace();
                 }
             }

@@ -20,7 +20,7 @@ public class FileIO {
         stringBuffer.append(temp);
         str[len] = '\0';
         if (!(new String(str, 0, len)).equals("/*** Copyright TrickEye ***/")) {
-            WrongBehaviour wb = new WrongBehaviour(WrongBehaviour.WRONG_FILE);
+            Notice wb = new Notice(Notice.WRONG_FILE);
             System.out.println(new String(str, 0, len));
             return null;
         }
@@ -124,7 +124,7 @@ public class FileIO {
             return ballSet;
         }
         else {
-            WrongBehaviour wb = new WrongBehaviour(WrongBehaviour.WRONG_FILE);
+            Notice wb = new Notice(Notice.WRONG_FILE);
             return null;
         }
     }

@@ -11,7 +11,7 @@ import java.io.IOException;
  * @see StartScreen
  * @see Ball
  * @see MainScreen
- * @see WrongBehaviour
+ * @see Notice
  */
 public class Globals {
     /**
@@ -19,13 +19,13 @@ public class Globals {
      * The notice will be used in StartScreen.java
      * @see StartScreen
      */
-    static String Title = "No-Collision System Illustrator";
+    static String Title = "No-Collision System Illustrator-v1.3";
     static String[] description = {
-            "Author: TrickEye",
-            "This is a java program aimed at generating a no-collision-system from ",
-            "  a randomly-generated status of distribution of the balls.",
-            "This is still being developed. Any content of this software does not",
-            "  represent final work."
+            "Author: Cui Yikai | Stu ID: 20373866 | Contact: trickeye@buaa.edu.cn",
+            "This is a java program aimed at generating a no-collision-system from a randomly ",
+            "    generated status of distribution of the balls. [V1.3]",
+            "This this a demo product submitted as the product of the homework project of my ",
+            "    Java Lecture (by lecturer: Mr.Li Bo)"
     };
     static String[] guide = {
             "Input an integer n as the number of the balls. (1 < n <= 50)",
@@ -73,6 +73,7 @@ public class Globals {
     static int SpeedFactor = 1;
     static int SlowDownFactor = 1;
     static int ignoreZoom = 0;
+    static boolean ignoreAdaptiveZoom = false;
 
     static String[][] MenuLabel = {
             {
@@ -81,22 +82,23 @@ public class Globals {
                 "Control"
             },
             {
-                "Software Information",
-                "Author Information",
-                "Back to start screen",
+                "Software Information  Ctrl+I",
+                "Author Information    Ctrl+A",
+                "Back to start screen  Ctrl+B",
                 "Close the software"
             },
             {
-                "Save current scene",
-                "Load from scene.ncl"
+                "Save current scene    Ctrl+S",
+                "Load from scene.ncl   Ctrl+L"
             },
             {
-                "Pause / Resume",
-                "Zoom in",
-                "Zoom out",
-                "Speed up",
-                "Speed down",
-                "Show / Hide tail"
+                "Pause / Resume    Space",
+                "Zoom in           Up",
+                "Zoom out          Down",
+                "Disable / Enable Adaptive Zoom   Ctrl+Z",
+                "Speed up          Right",
+                "Speed down        Down",
+                "Show / Hide tail  Ctrl+T"
             },
     };
     static ActionListener[][] MenuActionListener = {
@@ -105,14 +107,14 @@ public class Globals {
                 new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-
+                        Notice n = new Notice(Notice.SOFTWARE_INFO);
                     }
                 },
                     // Author Information
                 new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-
+                        Notice n = new Notice(Notice.AUTHOR_INFO);
                     }
                 },
                     // Back To Start Screen
@@ -151,7 +153,7 @@ public class Globals {
                             if (Main.LaunchFromFile(FileIO.InputInit()))
                                 MainScreen.setTextField("Welcome Back!", "SET");
                         } catch (IOException ex) {
-                            WrongBehaviour wb = new WrongBehaviour(WrongBehaviour.WRONG_FILE);
+                            Notice wb = new Notice(Notice.WRONG_FILE);
                             //ex.printStackTrace();
                         }
                     }
@@ -181,6 +183,20 @@ public class Globals {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         MainScreen.OBSERVE_SCALE *= 1.1;
+                    }
+                },
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (ignoreAdaptiveZoom == false) {
+                            ignoreAdaptiveZoom = true;
+                            MainScreen.setTextField("Adaptive Zoom Disabled.", "SET");
+                        }
+                        else if (ignoreAdaptiveZoom == true) {
+                            ignoreAdaptiveZoom = false;
+                            ignoreZoom = 0;
+                            MainScreen.setTextField("Adaptive Zoom Enabled.", "SET");
+                        }
                     }
                 },
                     //"Speed up",
@@ -230,12 +246,13 @@ public class Globals {
     };
 
     /**
-     * Below are notices that are used in WrongBehaviour.java
+     * Below are notices that are used in NoticeBehaviour.java
      * These string array provides information to be displayed at the warning window.
-     * @see WrongBehaviour
+     * @see Notice
      */
     static Color ErrorWBColor = new Color(255, 127, 0);
     static Color ErrorWNColor = new Color(192, 192, 127);
+    static Color InfoColor = new Color(64,64,64);
     static String [] NoticeWrongInput = {
             "Wrong Input!",
             "Error: Wrong input, please check your input",
@@ -258,5 +275,32 @@ public class Globals {
             "please check if you have enabled 125% zooming",
             "You can close this window and still run this",
             "software, but some features may be influenced."
+    };
+    static String [] NoticeSoftwareInformation = {
+            "Software Information",
+            "",
+            "    No-Collision-System Illustrator",
+            "    Developed by Cui Yikai",
+            "    Version: v1.3",
+            "    A demo for the Java class homework",
+            "    This software, as well as the source code of this, are open-source. Anyone",
+            "      is free to download, use, distribute, edit the source code and products.",
+            "    If you are interested in my work, please contact me at email",
+            "      trickeye@buaa.edu.cn",
+            "    For more information of the software, please visit:",
+            "https://trickeye.github.io/2021/12/05/No-Collision-System-Dynamic-Update.html",
+            "https://github.com/TrickEye/NoCollisionSystem",
+            "    Thank you. Cui Yikai, Dec.12, 2021",
+            ""
+    };
+
+    static String [] NoticeAuthorInformation = {
+            "Author Information",
+            "",
+            "    Cui Yikai (Or TrickEye)",
+            "    A sophomore in Beihang University",
+            "    Major: Computer Science and Technology",
+            "    Email: trickeye@buaa.edu.cn",
+            ""
     };
 }

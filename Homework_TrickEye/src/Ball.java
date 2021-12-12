@@ -201,6 +201,8 @@ public class Ball {
         //angle += 0.25 * Math.atan(1);
         double accX = -Math.cos(angle) * Math.sqrt((this.positionX) * (this.positionX) + this.positionY * this.positionY) * Globals.Gravity_Ratio;
         double accY = -Math.sin(angle) * Math.sqrt((this.positionX) * (this.positionX) + this.positionY * this.positionY) * Globals.Gravity_Ratio;
+//        double accX = -Math.cos(angle) * ((this.positionX) * (this.positionX) + this.positionY * this.positionY) * Globals.Gravity_Ratio;
+//        double accY = -Math.sin(angle) * ((this.positionX) * (this.positionX) + this.positionY * this.positionY) * Globals.Gravity_Ratio;
         this.setAccelerationX(accX);
         this.setAccelerationY(accY);
 //        double distanceSquared = (this.positionX - CENTER_POS_X) * (this.positionX - CENTER_POS_X) + (this.positionY - CENTER_POS_Y) * (this.positionY - CENTER_POS_Y);

@@ -102,7 +102,7 @@ public class MainScreen {
                 if (Math.abs(posX) > (int)(0.4 * width)) zoomOut = true;
                 if (Math.abs(posY) > (int)(0.4 * height)) zoomOut = true;
             }
-            if (zoomOut && Globals.ignoreZoom == 0) {
+            if (zoomOut && Globals.ignoreZoom == 0 && !Globals.ignoreAdaptiveZoom) {
                 MainScreen.setTextField("Adaptively zoom out; Observe Scale Now At: " + String.format("%.2f", OBSERVE_SCALE), "SET");
                 OBSERVE_SCALE *= 1.1;
             }
@@ -118,6 +118,12 @@ public class MainScreen {
             public void keyPressed(KeyEvent e) {
                 super.keyPressed(e);
                 int keyCode = e.getKeyCode();
+                if (keyCode == KeyEvent.VK_SPACE) {
+                    MainScreen.setTextField((CURRENT_STATE == STATE_NORMAL) ? "Stop." : "Resume.", "SET");
+                    if (CURRENT_STATE == STATE_NORMAL) btn2.setLabel("Resume");
+                    if (CURRENT_STATE == STATE_STOPPED) btn2.setLabel("Stop");
+                    CURRENT_STATE = 1 - CURRENT_STATE;
+                }
                 if (keyCode == KeyEvent.VK_UP) {
                     OBSERVE_SCALE *= 1.1;
                 }
@@ -125,10 +131,100 @@ public class MainScreen {
                     OBSERVE_SCALE /= 1.1;
                     Globals.ignoreZoom = 100;
                 }
+                if (keyCode == KeyEvent.VK_RIGHT) {
+                    if (Globals.SlowDownFactor == 1) {
+                        Globals.SpeedFactor = Math.min(Globals.SpeedFactor + 1, 100);
+                        MainScreen.setTextField("SpeedFactor : " + Globals.SpeedFactor, "SET");
+                        if (Globals.SpeedFactor >= 10 && SHOW_TAIL) {
+                            MainScreen.setTextField("We don't advice showing tail at this speed, tail hided.", "APPEND");
+                            SHOW_TAIL = false;
+                            MainScreen.btn7.setLabel("Show Tail");
+                        }
+                    }
+                    else {
+                        Globals.SlowDownFactor--;
+                        if (Globals.SlowDownFactor >= 2) MainScreen.setTextField("SpeedFactor : 1 / " + Globals.SlowDownFactor, "SET");
+                        else MainScreen.setTextField("SpeedFactor : 1", "SET");
+                    }
+                }
+                if (keyCode == KeyEvent.VK_LEFT) {
+                    if (Globals.SpeedFactor > 1) {
+                        Globals.SpeedFactor = Math.max(Globals.SpeedFactor - 1, 1);
+                        MainScreen.setTextField("SpeedFactor : " + Globals.SpeedFactor, "SET");
+                    }
+                    else {
+                        Globals.SlowDownFactor = Math.min(10, Globals.SlowDownFactor + 1);
+                        MainScreen.setTextField("SpeedFactor : 1 / " + Globals.SlowDownFactor, "SET");
+                    }
+                }
+                if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_S){
+                    try {
+                        FileIO.SaveCurrentScene(ballSet);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_L){
+                    try {
+                        if (Main.LaunchFromFile(FileIO.InputInit()))
+                            MainScreen.setTextField("Welcome Back!", "SET");
+                    } catch (IOException ex) {
+                        Notice wb = new Notice(Notice.WRONG_FILE);
+                        //ex.printStackTrace();
+                    }
+                }
+                if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_I) {
+                    Notice n = new Notice(Notice.SOFTWARE_INFO);
+                }
+                if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_A) {
+                    Notice n = new Notice(Notice.AUTHOR_INFO);
+                }
+                if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_B) {
+                    MainScreen.frame.setVisible(false);
+                    Main.startScreen.BackToLife();
+                }
+                if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_T) {
+                    MainScreen.SHOW_TAIL = !MainScreen.SHOW_TAIL;
+                    if (MainScreen.SHOW_TAIL) MainScreen.btn7.setLabel("Hide Tail");
+                    else MainScreen.btn7.setLabel("Show Tail");
+                }
+                if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_Z) {
+                    if (Globals.ignoreAdaptiveZoom == false) {
+                        Globals.ignoreAdaptiveZoom = true;
+                        MainScreen.setTextField("Adaptive Zoom Disabled.", "SET");
+                    }
+                    else if (Globals.ignoreAdaptiveZoom == true) {
+                        Globals.ignoreAdaptiveZoom = false;
+                        Globals.ignoreZoom = 0;
+                        MainScreen.setTextField("Adaptive Zoom Enabled.", "SET");
+                    }
+                }
             }
         };
 //        frame.addKeyListener(k1);
         myCanvas.addKeyListener(k1);
+        MouseWheelListener m1 = new MouseAdapter() {
+            /**
+             * {@inheritDoc}
+             *
+             * @param e
+             * @since 1.6
+             */
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                super.mouseWheelMoved(e);
+                System.out.println(e.getWheelRotation());
+                int e1 = e.getWheelRotation();
+                if (e1 > 0.5) {
+                    OBSERVE_SCALE *= 1.1;
+                }
+                if (e1 < -0.5) {
+                    OBSERVE_SCALE /= 1.1;
+                    Globals.ignoreZoom = 100;
+                }
+            }
+        };
+        myCanvas.addMouseWheelListener(m1);
     }
 
     void frameSetup(){
