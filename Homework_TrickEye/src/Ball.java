@@ -1,15 +1,17 @@
+import java.awt.*;
+import java.util.Arrays;
+
 public class Ball {
     private double positionX, positionY;
     private double velocityX, velocityY;
     private double accelerationX, accelerationY;
     private double diameter;
-    static double MASS_QUOTIENT = 0.0001;
-    static double MASS_CENTER = 10000000000.0;
-    static double ROTATE_CENTER_ANGLE = 0;
-    static double ROTATE_CENTER_W = 0;
-    static double ROTATE_LENGTH = 0;
+    private final double[][] History = new double[Globals.HistoryMemorySize][2];
+    private int HistoryNowAt = 0;
+    private int NotCollidedCycles;
+    private int[] NotCollidedArray = new int[Globals.HistoryMemorySize];
+    private int NotCollidedSum = 0;
     static double CENTER_POS_X, CENTER_POS_Y;
-
 
     public Ball (double posX, double posY, double diameter){
         this.setPositionX(posX);
@@ -19,6 +21,17 @@ public class Ball {
         this.setVelocityY(0);
         this.setAccelerationX(0);
         this.setAccelerationY(0);
+        for (int i = 0; i < Globals.HistoryMemorySize; i++) {
+            this.History[i][0] = this.getPositionX();
+            this.History[i][1] = this.getPositionY();
+        }
+        this.HistoryNowAt = 0;
+        this.NotCollidedCycles = 0;
+        this.NotCollidedSum = 0;
+    }
+
+    public Ball() {
+        this(0, 0, 0);
     }
 
     public double getPositionX() {
@@ -81,6 +94,30 @@ public class Ball {
         return Math.sqrt(this.getVelocityX()*this.getVelocityX() + this.getVelocityY()*this.getVelocityY());
     }
 
+    public double[][] getHistory() {
+        return History;
+    }
+
+    public int getHistoryNowAt(){
+        return HistoryNowAt;
+    }
+
+    public double getSafetyPercent(){
+        return Math.min(
+                (double)this.NotCollidedSum / ((double)Globals.NotCollidedMemorySize * Globals.HistoryMemorySize) ,
+                1.00
+        );
+    }
+
+    public static double getSafetyPercent(Ball[] ballSet){
+        int len = ballSet.length;
+        double totSafety = 0;
+        for (Ball ball : ballSet) {
+            totSafety += ball.getSafetyPercent();
+        }
+        return totSafety / len;
+    }
+
     @Override
     public String toString() {
         return  "ball:Diam = "+this.diameter+'\n'+
@@ -94,11 +131,7 @@ public class Ball {
         double deltaX = this.getPositionX() - b1.getPositionX();
         double deltaY = this.getPositionY() - b1.getPositionY();
         double sigmaR = this.getDiameter() / 2 + b1.getDiameter() / 2;
-        if (deltaX * deltaX + deltaY * deltaY < sigmaR * sigmaR) {
-            //System.out.println("Collide!:\n"+this.toString()+b1.toString());
-            return true;
-        }
-        return false;
+        return deltaX * deltaX + deltaY * deltaY < 0.99 * sigmaR * sigmaR;
     }
 
     public boolean CollideJudge(Ball[] ballSet, int n) {
@@ -110,38 +143,66 @@ public class Ball {
         return false;
     }
 
-    public double getMass(){
-        return 1;//MASS_QUOTIENT * this.diameter * this.diameter * this.diameter;
+    public Color getColor(){
+//        if (this.NotCollidedCycles > Globals.NotCollidedMemorySize) return Color.GREEN;
+//        else {
+//            Color red = Color.RED;
+//            Color green = Color.GREEN;
+//            return new Color((int)(((double) this.NotCollidedCycles / (double)Globals.NotCollidedMemorySize) * (green.getRGB() - red.getRGB()) )+ red.getRGB());
+//        }
+        int completeness = this.NotCollidedCycles * (Globals.colorArrayLen - 1) / Globals.NotCollidedMemorySize;
+        if (completeness < 0) completeness = 0;
+        if (completeness >= Globals.colorArrayLen) completeness = Globals.colorArrayLen - 1;
+        return Globals.colorArray[completeness];
     }
 
-    public static void refreshCenter(){
-        ROTATE_CENTER_ANGLE += ROTATE_CENTER_W * GUI.PHYSICAL_TIMESCALE / 1000;
-        CENTER_POS_X = Math.sin(ROTATE_CENTER_ANGLE) * ROTATE_LENGTH;
-        CENTER_POS_Y = Math.cos(ROTATE_CENTER_ANGLE) * ROTATE_LENGTH;
-    }
+    int cycle = 0;
+    int cycleCounter = 0;
+    public void refresh(Ball[] ballSet, int n) {
+        cycleCounter++;
+        if (cycleCounter < Globals.SlowDownFactor) return;
+        else cycleCounter = 0;
 
-    public void refresh(Ball[] ballSet, int n){
+        // record history
+
+        if (this.cycle % 5 == 0) {
+            this.History[this.HistoryNowAt][0] = this.positionX;
+            this.History[this.HistoryNowAt][1] = this.positionY;
+
+            this.NotCollidedSum -= this.NotCollidedArray[HistoryNowAt];
+            this.NotCollidedArray[HistoryNowAt] = this.NotCollidedCycles;
+            this.NotCollidedSum += this.NotCollidedArray[HistoryNowAt];
+
+            HistoryNowAt++;
+            if (HistoryNowAt >= Globals.HistoryMemorySize) HistoryNowAt -= Globals.HistoryMemorySize;
+
+        }
+        this.cycle++; if (cycle > 5) cycle-=5;
+
+
         // apply a -> v refresh.
-        if (this.accelerationX != 0){
-            this.velocityX += accelerationX * GUI.PHYSICAL_TIMESCALE / 1000;
+        if (this.accelerationX != 0) {
+            this.velocityX += accelerationX * MainScreen.PHYSICAL_TIMESCALE / 1000;
         }
         if (this.accelerationY != 0) {
-            this.velocityY += accelerationY * GUI.PHYSICAL_TIMESCALE / 1000;
+            this.velocityY += accelerationY * MainScreen.PHYSICAL_TIMESCALE / 1000;
         }
 
         // apply v -> x refresh.
         if (this.velocityX != 0) {
-            this.positionX += velocityX * GUI.PHYSICAL_TIMESCALE / 1000;
+            this.positionX += velocityX * MainScreen.PHYSICAL_TIMESCALE / 1000;
         }
         if (this.velocityY != 0) {
-            this.positionY += velocityY * GUI.PHYSICAL_TIMESCALE / 1000;
+            this.positionY += velocityY * MainScreen.PHYSICAL_TIMESCALE / 1000;
         }
 
         // apply a refresh.
         double angle = Math.atan2(this.getPositionY(), this.getPositionX());
         //angle += 0.25 * Math.atan(1);
-        double accX = -Math.cos(angle) * Math.sqrt((this.positionX) * (this.positionX) + this.positionY * this.positionY);
-        double accY = -Math.sin(angle) * Math.sqrt((this.positionX) * (this.positionX) + this.positionY * this.positionY);
+        double accX = -Math.cos(angle) * Math.sqrt((this.positionX) * (this.positionX) + this.positionY * this.positionY) * Globals.Gravity_Ratio;
+        double accY = -Math.sin(angle) * Math.sqrt((this.positionX) * (this.positionX) + this.positionY * this.positionY) * Globals.Gravity_Ratio;
+//        double accX = -Math.cos(angle) * ((this.positionX) * (this.positionX) + this.positionY * this.positionY) * Globals.Gravity_Ratio;
+//        double accY = -Math.sin(angle) * ((this.positionX) * (this.positionX) + this.positionY * this.positionY) * Globals.Gravity_Ratio;
         this.setAccelerationX(accX);
         this.setAccelerationY(accY);
 //        double distanceSquared = (this.positionX - CENTER_POS_X) * (this.positionX - CENTER_POS_X) + (this.positionY - CENTER_POS_Y) * (this.positionY - CENTER_POS_Y);
@@ -154,80 +215,29 @@ public class Ball {
 
         // apply collision
         for (int i = 0; i < n; i++) {
-            if (this.CollideJudge(ballSet[i])){
-//                System.out.println(this.toString());
-//                System.out.println(ballSet[i].toString());
+            if (this.CollideJudge(ballSet[i])) {
+                if (this.NotCollidedCycles > Globals.NotCollidedMemorySize) Globals.NotCollidedMemorySize = (2 * this.NotCollidedCycles);
+                if (ballSet[i].NotCollidedCycles > Globals.NotCollidedMemorySize) Globals.NotCollidedMemorySize = (2 * ballSet[i].NotCollidedCycles);
+                this.NotCollidedCycles = 0;
+                ballSet[i].NotCollidedCycles = 0;
                 double[] deltaPos = {this.getPositionX() - ballSet[i].getPositionX(), this.getPositionY() - ballSet[i].getPositionY()};
                 double distance = Math.sqrt(deltaPos[0] * deltaPos[0] + deltaPos[1] * deltaPos[1]);
-                double minDistance = this.getDiameter() + ballSet[i].getDiameter();
+                double minDistance = (this.getDiameter() + ballSet[i].getDiameter()) / 2;
 
                 double[] collideAxe = {deltaPos[0] / distance, deltaPos[1] / distance};
-                this.setPositionX(this.getPositionX() + 0.05 * (minDistance - distance) * collideAxe[0]);
-                this.setPositionY(this.getPositionY() + 0.05 * (minDistance - distance) * collideAxe[1]);
-                ballSet[i].setPositionX(ballSet[i].getPositionX() - 0.05 * (minDistance - distance) * collideAxe[0]);
-                ballSet[i].setPositionY(ballSet[i].getPositionY() - 0.05 * (minDistance - distance) * collideAxe[1]);
-
-//                System.out.println(this.toString());
-//                System.out.println(ballSet[i].toString());
-//                GUI.CURRENT_STATE = GUI.STATE_STOPPED;
-//                double vx1 = this.getVelocityX();
-//                double vx2 = ballSet[i].getVelocityX();
-//                double vy1 = this.getVelocityY();
-//                double vy2 = ballSet[i].getVelocityY();
-//                double x1 = this.getPositionX();
-//                double x2 = ballSet[i].getPositionX();
-//                double y1 = this.getPositionY();
-//                double y2 = ballSet[i].getPositionY();
-//                double m1 = this.getMass();
-//                double m2 = ballSet[i].getMass();
-//                // 得到正交速度矢量、位移矢量、质量（替代值）
-//                double offsetAngle1 = Math.atan2(vy1, vx1);
-//                double offsetAngle2 = Math.atan2(vy2, vx2);
-//                double len1 = Math.sqrt(vx1 * vx1 + vy1 * vy1);
-//                double len2 = Math.sqrt(vx2 * vx2 + vy2 * vy2);
-//                // 得到极坐标下偏移角度和长度
-//                double offsetAngleP = Math.atan2(y2 - y1, x2 - x1);
-//                double distSquared = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
-//                double shadowLen1 = (vx1 * (x2 - x1) + vy1 * (y2 - y1)) / (Math.sqrt(distSquared));
-//                double shadowLen2 = (vx2 * (x2 - x1) + vy2 * (y2 - y1)) / (Math.sqrt(distSquared));
-//                double commonShadowLen = ((shadowLen1 * m1) + (shadowLen2 * m2)) / (m1 + m2);
-//                // 碰撞逻辑：通过位矢差确定法向，法向上完全非弹性碰撞。
-//                double deltaShadow1 = commonShadowLen - shadowLen1;
-//                double deltaShadow2 = commonShadowLen - shadowLen2;
-//                double newVx1 = vx1 + deltaShadow1 * Math.cos(offsetAngleP) - (this.getDiameter() + ballSet[i].getDiameter() - Math.sqrt(distSquared)) * Math.cos(offsetAngleP) / 3;
-//                double newVy1 = vy1 + deltaShadow1 * Math.sin(offsetAngleP) - (this.getDiameter() + ballSet[i].getDiameter() - Math.sqrt(distSquared)) * Math.sin(offsetAngleP) / 3;
-//                double newVx2 = vx2 + deltaShadow2 * Math.cos(offsetAngleP);
-//                double newVy2 = vy2 + deltaShadow2 * Math.sin(offsetAngleP);
-//                // 产生新的速度值
-//                this.setVelocityX(newVx1);
-//                this.setVelocityY(newVy1);
-
-//                System.out.println("ball1:<"+vx1+","+vy1+">");
-//                System.out.println("ball2:<"+vx2+","+vy2+">");
-//                System.out.println("--->");
-//                System.out.println("ball1:<"+newVx1+","+newVy1+">");
-//                System.out.println("ball2:<"+newVx2+","+newVy2+">");
-//                System.out.printf("shadowLen1 : %f\n", shadowLen1);
-//                System.out.printf("shadowLen2 : %f\n", shadowLen2);
-//                System.out.printf("commonShadowLen : %f\n", commonShadowLen);
-//                System.out.printf("offsetAngleP : %f\n", offsetAngleP);
-//                System.out.printf("deltaShadow1 : %f\n", deltaShadow1);
-//                System.out.printf("deltaShadow2 : %f\n", deltaShadow2);
-//
-//                System.out.println("\n\n");
-//                GUI.CURRENT_STATE = 1 - GUI.CURRENT_STATE;
-
+                this.setPositionX(this.getPositionX() + 0.5 * (minDistance - distance) * collideAxe[0]);
+                this.setPositionY(this.getPositionY() + 0.5 * (minDistance - distance) * collideAxe[1]);
+                ballSet[i].setPositionX(ballSet[i].getPositionX() - 0.5 * (minDistance - distance) * collideAxe[0]);
+                ballSet[i].setPositionY(ballSet[i].getPositionY() - 0.5 * (minDistance - distance) * collideAxe[1]);
+            }
+            else {
+                this.NotCollidedCycles++;
             }
         }
     }
-    public static void main(String[] args){
-        System.out.printf("%f", Math.atan2(-4, 1));
+
+    public boolean isComplete(){
+        return this.NotCollidedCycles > (int)(1.2 * Globals.NotCollidedMemorySize);
     }
-    /*
-    * public static void main(String[] args){
-    *     Ball ball1 = new Ball(100,200,50);
-    *
-    *     System.out.println(ball1.toString());
-    * }
-    */
+
 }
